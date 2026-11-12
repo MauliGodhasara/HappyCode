@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Memories 📸</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crafty+Girls&family=Playfair+Display:ital,wght@0,600;1,500&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="fx.css">
+
+  <script src="script.js" defer></script>
+  <script src="fx.js" defer></script>
+
+  <style>
+    :root {
+      --rose: #e84378;
+      --rose-soft: #ff8fb1;
+      --wine: #b83264;
+      --ink: #6b3a50;
+      --paper: #fffafc;
+      --shadow: 0 10px 30px rgba(190, 70, 110, .16);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body.gallery-page {
+      min-height: 100vh;
+      font-family: 'Quicksand', 'Segoe UI', sans-serif;
+      color: var(--ink);
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 255, 255, .9), transparent 35%),
+        radial-gradient(circle at 88% 82%, rgba(255, 200, 220, .8), transparent 40%),
+        linear-gradient(135deg, #fff0f5, #ffe1ec, #fff5f8, #ffe8f1);
+      background-size: 200% 200%;
+      background-attachment: fixed;
+      animation: fx-page-in .8s ease-out, bg-pan 18s ease-in-out infinite;
+    }
+    @keyframes bg-pan {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    /* drifting blobs */
+    .blob {
+      position: fixed;
+      z-index: -2;
+      width: 40vmax;
+      height: 40vmax;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: .45;
+      pointer-events: none;
+      animation: blob 22s ease-in-out infinite alternate;
+    }
+    .blob.b1 { background: #ffc2d6; top: -12vmax; left: -10vmax; }
+    .blob.b2 { background: #ffe0b8; bottom: -14vmax; right: -12vmax; animation-delay: -8s; }
+    .blob.b3 { background: #e9c6ff; top: 40%; left: 55%; width: 26vmax; height: 26vmax; animation-delay: -14s; opacity: .3; }
+    @keyframes blob {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(6vmax, 4vmax) scale(1.15); }
+    }
+
+    #music-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(232, 67, 120, .18);
+      background: rgba(255, 255, 255, .85);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .gallery-content {
+      max-width: 1140px;
+      margin: auto;
+      padding: 56px 20px 70px;
+      text-align: center;
+    }
+
+    /* ---------- header ---------- */
+    .gallery-tag {
+      display: inline-block;
+      color: #d63384;
+      letter-spacing: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .7);
+      box-shadow: 0 4px 14px rgba(214, 51, 132, .12);
+      animation: drop-in .8s cubic-bezier(.34, 1.56, .64, 1) backwards;
+    }
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(30px, 5.5vw, 52px);
+      color: var(--wine);
+      margin: 22px 0 14px;
+      line-height: 1.2;
+      text-shadow: 0 4px 20px rgba(255, 255, 255, .9);
+    }
+    .gallery-subtitle {
+      color: #92546b;
+      font-size: 17px;
+      margin-bottom: 18px;
+      animation: rise .8s ease .5s backwards;
+    }
+    .gallery-divider {
+      color: #e78cae;
+      letter-spacing: 4px;
+      margin-bottom: 30px;
+      animation: rise .8s ease .7s backwards;
+    }
+    .gallery-divider span { display: inline-block; animation: beat 1.6s ease-in-out infinite; }
+    .gallery-divider span:nth-child(2) { animation-delay: .2s; }
+    .gallery-divider span:nth-child(3) { animation-delay: .4s; }
+
+    /* ---------- toolbar ---------- */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px 20px;
+      max-width: 860px;
+      margin: 0 auto 14px;
+      padding: 14px 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, .65);
+      border: 1px solid rgba(255, 255, 255, .9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: rise .8s ease .85s backwards;
+    }
+    .love-meter { flex: 1 1 240px; text-align: left; }
+    .love-meter__label { font-size: 14px; font-weight: 600; color: var(--wine); }
+    .love-meter__label b { display: inline-block; min-width: 1ch; transition: transform .3s; }
+    .love-meter__label b.bump { animation: bump .45s cubic-bezier(.34, 1.56, .64, 1); }
+    .love-meter__bar {
+      height: 9px;
+      margin-top: 8px;
+      border-radius: 99px;
+      background: #ffe1ea;
+      overflow: hidden;
+    }
+    .love-meter__bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ffb3c8, var(--rose), #ff6f9f);
+      background-size: 200% 100%;
+      animation: bar-shine 2.5s linear infinite;
+      transition: width .6s cubic-bezier(.34, 1.4, .64, 1);
+    }
+    @keyframes bar-shine { to { background-position: -200% 0; } }
+
+    .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .chip {
+      font: 600 14px 'Quicksand', sans-serif;
+      color: var(--wine);
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(232, 67, 120, .25);
+      background: #fff;
+      cursor: pointer;
+      transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), background .25s, color .25s, box-shadow .25s;
+    }
+    .chip:hover { transform: translateY(-2px); background: var(--rose); color: #fff; box-shadow: 0 8px 18px rgba(232, 67, 120, .3); }
+    .chip:active { transform: scale(.95); }
+    .chip:focus-visible { outline: 3px solid var(--wine); outline-offset: 3px; }
+
+    .gallery-hint {
+      font-size: 13px;
+      color: #a66d84;
+      margin: 4px 0 30px;
+      animation: rise .8s ease 1s backwards;
+    }
+
+    /* ---------- grid ---------- */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 26px;
+      perspective: 1200px;
+    }
+
+    .gallery-item {
+      --rot: -1.6deg;
+      --rx: 0deg;
+      --ry: 0deg;
+      --lift: 0px;
+      position: relative;
+      padding: 10px 10px 0;
+      border-radius: 18px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      cursor: zoom-in;
+      outline: none;
+      transform-style: preserve-3d;
+      transform: rotate(var(--rot)) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
+      transition: transform .45s cubic-bezier(.2, .8, .2, 1), box-shadow .45s ease,
+                  opacity .8s ease, translate .9s cubic-bezier(.2, .8, .2, 1), scale .9s cubic-bezier(.2, .8, .2, 1);
+      transition-delay: 0s, 0s, var(--d, 0s), var(--d, 0s), var(--d, 0s);
+      opacity: 0;
+      translate: 0 50px;
+      scale: .92;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gallery-item.is-visible { opacity: 1; translate: 0 0; scale: 1; }
+    .gallery-item:nth-child(even) { --rot: 1.6deg; }
+    .gallery-item:nth-child(3n)   { --rot: -.6deg; }
+    .gallery-item:nth-child(5n)   { --rot: 2.2deg; }
+
+    .gallery-item:hover,
+    .gallery-item:focus-visible {
+      --rot: 0deg;
+      --lift: -8px;
+      z-index: 3;
+      box-shadow: 0 24px 50px rgba(190, 70, 110, .32);
+    }
+    .gallery-item:focus-visible { box-shadow: 0 0 0 3px var(--rose), 0 24px 50px rgba(190, 70, 110, .32); }
+
+    /* little washi tape */
+    .gallery-item::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      width: 70px;
+      height: 22px;
+      translate: -50% 0;
+      rotate: -4deg;
+      background: repeating-linear-gradient(45deg, rgba(255, 170, 200, .75) 0 6px, rgba(255, 210, 225, .75) 6px 12px);
+      border-radius: 3px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .06);
+      z-index: 2;
+    }
+    .gallery-item:nth-child(even)::before { rotate: 5deg; }
+
+    .photo-frame {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      transform: translateZ(20px);
+    }
+    .photo-frame img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+      transition: transform .7s cubic-bezier(.2, .8, .2, 1), filter .5s ease;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .gallery-item:hover .photo-frame img { transform: scale(1.1); filter: saturate(1.15); }
+
+    .glare {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, .55), transparent 55%);
+      opacity: 0;
+      transition: opacity .3s ease;
+      mix-blend-mode: soft-light;
+    }
+    .gallery-item:hover .glare { opacity: 1; }
+
+    .photo-frame::after {
+      content: "🔍";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      background: linear-gradient(to top, rgba(184, 50, 100, .35), transparent 60%);
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+    .gallery-item:hover .photo-frame::after { opacity: 1; }
+
+    .big-heart {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      font-size: 90px;
+      pointer-events: none;
+      translate: -50% -50%;
+      z-index: 4;
+      filter: drop-shadow(0 6px 14px rgba(232, 67, 120, .5));
+      animation: big-heart .9s cubic-bezier(.2, .8, .2, 1) forwards;
+    }
+    @keyframes big-heart {
+      0%   { opacity: 0; transform: scale(.2); }
+      25%  { opacity: 1; transform: scale(1.2); }
+      45%  { transform: scale(.95); }
+      70%  { opacity: 1; transform: scale(1.05); }
+      100% { opacity: 0; transform: scale(1.4) translateY(-30px); }
+    }
+
+    figcaption.caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 4px 12px;
+      font-family: 'Crafty Girls', cursive;
+      font-size: 15px;
+      color: var(--wine);
+      transform: translateZ(10px);
+    }
+
+    .like-btn {
+      position: relative;
+      border: 0;
+      background: none;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      color: #f08aa9;
+      padding: 4px 6px;
+      border-radius: 50%;
+      transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), color .3s;
+    }
+    .like-btn:hover { transform: scale(1.25); }
+    .like-btn:focus-visible { outline: 2px solid var(--rose); outline-offset: 2px; }
+    .like-btn.is-liked { color: var(--rose); animation: bump .5s cubic-bezier(.34, 1.56, .64, 1); }
+    .gallery-item.loved { box-shadow: 0 0 0 2px rgba(255, 143, 177, .7), var(--shadow); }
+
+    /* ---------- footer ---------- */
+    .gallery-footer {
+      color: var(--wine);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 20px;
+      margin: 56px 0 26px;
+    }
+
+    .pretty-button {
+      position: relative;
+      overflow: hidden;
+      border: none;
+      padding: 15px 34px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #ff6f9f, var(--rose));
+      color: white;
+      font: 600 16px 'Quicksand', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 6px 22px rgba(232, 67, 120, .35);
+      transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), box-shadow .3s ease;
+      animation: glow 2.4s ease-in-out infinite;
+    }
+    .pretty-button::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 -60%;
+      width: 40%;
+      background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .6), transparent);
+      transform: skewX(-20deg);
+      animation: shine 3.2s ease-in-out infinite;
+    }
+    .pretty-button:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 12px 28px rgba(232, 67, 120, .45); }
+    .pretty-button:focus-visible { outline: 3px solid var(--wine); outline-offset: 4px; }
+    @keyframes shine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 6px 22px rgba(232, 67, 120, .35), 0 0 0 0 rgba(232, 67, 120, .35); }
+      50%      { box-shadow: 0 6px 22px rgba(232, 67, 120, .35), 0 0 0 14px rgba(232, 67, 120, 0); }
+    }
+
+    /* ---------- toast ---------- */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      z-index: 60;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--wine);
+      font-weight: 600;
+      box-shadow: 0 14px 40px rgba(184, 50, 100, .25);
+      translate: -50% 140%;
+      opacity: 0;
+      transition: translate .5s cubic-bezier(.34, 1.56, .64, 1), opacity .4s ease;
+      pointer-events: none;
+      max-width: calc(100% - 32px);
+      text-align: center;
+    }
+    .toast.show { translate: -50% 0; opacity: 1; }
+
+    /* ---------- lightbox ---------- */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+      align-items: center;
+      justify-items: center;
+      padding: 18px 18px 14px;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .4s ease, visibility 0s linear .4s;
+    }
+    .lightbox.open { visibility: visible; opacity: 1; transition: opacity .4s ease; }
+    .lb-backdrop {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(90, 25, 55, .78), rgba(40, 10, 25, .93));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .lb-top {
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffe3ec;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+    .lb-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+    .lb-card {
+      position: relative;
+      padding: 12px 12px 0;
+      background: var(--paper);
+      border-radius: 16px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
+      max-width: min(92vw, 900px);
+      transform: scale(.85) rotate(-2deg);
+      transition: transform .5s cubic-bezier(.34, 1.4, .64, 1);
+    }
+    .lightbox.open .lb-card { transform: scale(1) rotate(0); }
+    .lb-card .lb-img-wrap { overflow: hidden; border-radius: 10px; }
+    .lb-card img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 260px);
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .lightbox.playing .lb-card img { animation: kenburns 4s ease-out both; }
+    @keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.08); } }
+    .lb-card figcaption {
+      font-family: 'Crafty Girls', cursive;
+      color: var(--wine);
+      text-align: center;
+      padding: 10px 0 12px;
+      font-size: 17px;
+    }
+    .lb-card.slide-next { animation: slide-next .45s cubic-bezier(.2, .8, .2, 1); }
+    .lb-card.slide-prev { animation: slide-prev .45s cubic-bezier(.2, .8, .2, 1); }
+    @keyframes slide-next { from { opacity: 0; translate: 70px 0; rotate: 3deg; } to { opacity: 1; translate: 0 0; rotate: 0deg; } }
+    @keyframes slide-prev { from { opacity: 0; translate: -70px 0; rotate: -3deg; } to { opacity: 1; translate: 0 0; rotate: 0deg; } }
+
+    .lb-btn {
+      position: relative;
+      z-index: 2;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, .35);
+      background: rgba(255, 255, 255, .15);
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      backdrop-filter: blur(6px);
+      transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), background .25s;
+    }
+    .lb-btn:hover { background: rgba(255, 255, 255, .3); transform: scale(1.1); }
+    .lb-btn:focus-visible { outline: 3px solid #ffb6c8; outline-offset: 3px; }
+    .lb-nav { position: absolute; top: 50%; translate: 0 -50%; font-size: 30px; }
+    .lb-prev { left: 4px; }
+    .lb-next { right: 4px; }
+    .lb-like.is-liked { background: var(--rose); border-color: var(--rose); }
+
+    .lb-controls { position: relative; display: flex; gap: 12px; align-items: center; margin: 12px 0 10px; }
+    .lb-progress {
+      width: 120px;
+      height: 4px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, .2);
+      overflow: hidden;
+    }
+    .lb-progress i { display: block; height: 100%; width: 0; background: #ffb6c8; border-radius: inherit; }
+    .lightbox.playing .lb-progress i { animation: progress var(--slide, 3.5s) linear forwards; }
+    @keyframes progress { to { width: 100%; } }
+
+    .lb-thumbs {
+      position: relative;
+      display: flex;
+      gap: 8px;
+      max-width: 100%;
+      overflow-x: auto;
+      padding: 4px 4px 6px;
+      scrollbar-width: none;
+    }
+    .lb-thumbs::-webkit-scrollbar { display: none; }
+    .lb-thumbs button {
+      flex: 0 0 auto;
+      width: 56px;
+      height: 56px;
+      padding: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      opacity: .5;
+      cursor: pointer;
+      background: none;
+      transition: opacity .3s, transform .3s cubic-bezier(.34, 1.56, .64, 1), border-color .3s;
+    }
+    .lb-thumbs button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .lb-thumbs button:hover { opacity: .85; transform: translateY(-3px); }
+    .lb-thumbs button.active { opacity: 1; border-color: #ffb6c8; transform: translateY(-3px) scale(1.06); }
+
+    /* ---------- shared keyframes ---------- */
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    @keyframes drop-in { from { opacity: 0; transform: translateY(-20px) scale(.8); } to { opacity: 1; transform: none; } }
+    @keyframes beat { 0%, 100% { transform: scale(1); } 30% { transform: scale(1.3); } 60% { transform: scale(.95); } }
+    @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.5); } 100% { transform: scale(1); } }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 960px) { .gallery-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 720px) {
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+      .photo-frame img { height: 210px; }
+      .gallery-content { padding: 70px 16px 50px; }
+      .toolbar { justify-content: center; }
+      .love-meter { text-align: center; }
+      .lb-nav { width: 40px; height: 40px; font-size: 24px; }
+    }
+    @media (max-width: 400px) {
+      .gallery-grid { gap: 14px; }
+      .photo-frame img { height: 160px; }
+      figcaption.caption { font-size: 13px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .gallery-item { opacity: 1; translate: none; scale: none; }
+    }
+  </style>
+</head>
+
+<body class="gallery-page" data-fx-hearts="14">
+  <div class="blob b1" aria-hidden="true"></div>
+  <div class="blob b2" aria-hidden="true"></div>
+  <div class="blob b3" aria-hidden="true"></div>
+
+  <button id="music-toggle">🔈</button>
+
+  <main class="content gallery-content">
+    <span class="gallery-tag">♡ OUR LITTLE WORLD ♡</span>
+
+    <h1 data-wave>A Little Gallery for You 💕</h1>
+
+    <p class="gallery-subtitle">
+      ✨ A few of my favorite pics of us + my gorgeous gf 🦊
+    </p>
+
+    <div class="gallery-divider" aria-hidden="true">
+      <span>♡</span> ───── <span>♡</span> ───── <span>♡</span>
+    </div>
+
+    <div class="toolbar">
+      <div class="love-meter">
+        <div class="love-meter__label">💗 <b id="loveCount">0</b> / <span id="loveTotal">8</span> memories loved</div>
+        <div class="love-meter__bar"><i id="loveBar"></i></div>
+      </div>
+      <div class="toolbar-actions">
+        <button class="chip" id="shuffleBtn" type="button">🔀 Shuffle</button>
+        <button class="chip" id="slideshowBtn" type="button">▶ Slideshow</button>
+      </div>
+    </div>
+
+    <p class="gallery-hint">Tap a photo to open it · double-tap or ♡ to love it 💞</p>
+
+    <div class="gallery-grid" id="galleryGrid"></div>
+
+    <p class="gallery-footer" data-reveal>
+      Every picture holds a little piece of my heart 💌
+    </p>
+
+    <button class="pretty-button" onclick="goTo('letter.html')">
+      Continue ➜
+    </button>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-hidden="true" data-no-burst>
+    <div class="lb-backdrop" data-close></div>
+
+    <div class="lb-top">
+      <span id="lbCounter">1 / 8</span>
+      <button class="lb-btn lb-close" type="button" aria-label="Close" data-close>✕</button>
+    </div>
+
+    <div class="lb-stage" id="lbStage">
+      <figure class="lb-card" id="lbCard">
+        <div class="lb-img-wrap"><img id="lbImg" src="" alt=""></div>
+        <figcaption id="lbCaption"></figcaption>
+      </figure>
+      <button class="lb-btn lb-nav lb-prev" type="button" aria-label="Previous photo">‹</button>
+      <button class="lb-btn lb-nav lb-next" type="button" aria-label="Next photo">›</button>
+    </div>
+
+    <div class="lb-controls">
+      <button class="lb-btn lb-like" id="lbLike" type="button" aria-label="Love this photo" aria-pressed="false">♡</button>
+      <button class="lb-btn" id="lbPlay" type="button" aria-label="Play slideshow">▶</button>
+      <div class="lb-progress" aria-hidden="true"><i id="lbProgress"></i></div>
+    </div>
+
+    <div class="lb-thumbs" id="lbThumbs"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const FX = window.FX || { burst() {}, reveal(n) { n.forEach(el => el.classList.add('is-visible')); }, reduce: false, finePointer: false };
+
+      // ---------- data ----------
+      const photos = [
+        { src: 'images/gallery1.jpg', alt: 'Moment 1', caption: 'Memory 01 ✨' },
+        { src: 'images/gallery2.jpg', alt: 'Moment 2', caption: 'Memory 02 💕' },
+        { src: 'images/gallery3.jpg', alt: 'Moment 3', caption: 'Memory 03 🌸' },
+        { src: 'images/gallery4.jpg', alt: 'Moment 4', caption: 'Memory 04 🦊' },
+        { src: 'images/gallery5.jpg', alt: 'Moment 5', caption: 'Memory 05 💖' },
+        { src: 'images/gallery6.jpg', alt: 'Moment 6', caption: 'Memory 06 🌷' },
+        { src: 'images/gallery7.jpg', alt: 'Moment 7', caption: 'Memory 07 💌' },
+        { src: 'images/gallery8.jpg', alt: 'Moment 8', caption: 'Memory 08 🫶' },
+      ];
+
+      const grid = document.getElementById('galleryGrid');
+      const loveCount = document.getElementById('loveCount');
+      const loveBar = document.getElementById('loveBar');
+      const toastEl = document.getElementById('toast');
+      document.getElementById('loveTotal').textContent = photos.length;
+
+      // ---------- loves (remembered in this browser) ----------
+      const STORE = 'gallery-loves';
+      let loves = new Set();
+      try { loves = new Set(JSON.parse(localStorage.getItem(STORE) || '[]')); } catch (e) {}
+      const saveLoves = () => { try { localStorage.setItem(STORE, JSON.stringify([...loves])); } catch (e) {} };
+
+      // ---------- build cards ----------
+      const cards = photos.map((p, i) => {
+        const fig = document.createElement('figure');
+        fig.className = 'gallery-item';
+        fig.tabIndex = 0;
+        fig.dataset.index = i;
+        fig.style.setProperty('--d', (i % 4) * 0.09 + 's');
+        fig.setAttribute('role', 'button');
+        fig.setAttribute('aria-label', 'Open ' + p.alt);
+        fig.innerHTML = `
+          <div class="photo-frame">
+            <img src="${p.src}" alt="${p.alt}" loading="lazy" draggable="false">
+            <span class="glare"></span>
+          </div>
+          <figcaption class="caption">
+            <span>${p.caption}</span>
+            <button class="like-btn" type="button" aria-label="Love ${p.alt}" aria-pressed="false" data-no-burst>♡</button>
+          </figcaption>`;
+        grid.appendChild(fig);
+        return fig;
+      });
+      FX.reveal(cards);
+
+      // ---------- love logic ----------
+      function toast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toast.t);
+        toast.t = setTimeout(() => toastEl.classList.remove('show'), 2800);
+      }
+
+      function renderLoves(changedIndex) {
+        cards.forEach((card) => {
+          const i = +card.dataset.index;
+          const on = loves.has(i);
+          card.classList.toggle('loved', on);
+          const btn = card.querySelector('.like-btn');
+          btn.textContent = on ? '♥' : '♡';
+          btn.setAttribute('aria-pressed', on);
+          if (i === changedIndex) {
+            btn.classList.remove('is-liked');
+            if (on) { void btn.offsetWidth; btn.classList.add('is-liked'); }
+          }
+        });
+        loveCount.textContent = loves.size;
+        loveCount.classList.remove('bump'); void loveCount.offsetWidth; loveCount.classList.add('bump');
+        loveBar.style.width = (loves.size / photos.length) * 100 + '%';
+        syncLightboxLike();
+      }
+
+      function toggleLove(i, forceOn) {
+        const card = cards[i];
+        const wasOn = loves.has(i);
+        const on = forceOn ? true : !wasOn;
+        if (on) loves.add(i); else loves.delete(i);
+        saveLoves();
+        renderLoves(i);
+
+        if (on) {
+          // big heart pop on the photo
+          const frame = card.querySelector('.photo-frame');
+          const h = document.createElement('span');
+          h.className = 'big-heart';
+          h.textContent = '💖';
+          frame.appendChild(h);
+          h.addEventListener('animationend', () => h.remove(), { once: true });
+          const r = frame.getBoundingClientRect();
+          FX.burst(r.left + r.width / 2, r.top + r.height / 2, 12, ['💖', '💗', '💕', '✨'], 1.3);
+
+          if (!wasOn && loves.size === photos.length) {
+            toast('You loved every single memory 🥹💖');
+            for (let k = 0; k < 5; k++) {
+              setTimeout(() => FX.burst(
+                window.innerWidth * (0.15 + Math.random() * 0.7),
+                window.innerHeight * (0.2 + Math.random() * 0.5),
+                16, ['💖', '💗', '💕', '✨', '🌸'], 1.8), k * 280);
+            }
+          } else if (!wasOn) {
+            const left = photos.length - loves.size;
+            toast(left === 1 ? 'Just one more to love 💞' : `Loved! ${left} more to go 💕`);
+          }
+        }
+      }
+
+      // ---------- card interactions ----------
+      cards.forEach((card) => {
+        const i = +card.dataset.index;
+        let clickTimer = null;
+
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.like-btn')) {
+            e.stopPropagation();
+            toggleLove(i);
+            return;
+          }
+          // single tap → open, double tap → love
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+            toggleLove(i, true);
+          } else {
+            clickTimer = setTimeout(() => { clickTimer = null; openLightbox(i); }, 260);
+          }
+        });
+
+        card.addEventListener('keydown', (e) => {
+          if (e.target !== card) return;
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(i); }
+          if (e.key.toLowerCase() === 'l') toggleLove(i);
+        });
+
+        // 3D tilt + glare (mouse only)
+        if (FX.finePointer && !FX.reduce) {
+          card.addEventListener('pointermove', (e) => {
+            if (e.pointerType !== 'mouse') return;
+            const r = card.getBoundingClientRect();
+            const px = (e.clientX - r.left) / r.width;
+            const py = (e.clientY - r.top) / r.height;
+            card.style.setProperty('--ry', ((px - 0.5) * 16).toFixed(2) + 'deg');
+            card.style.setProperty('--rx', ((0.5 - py) * 14).toFixed(2) + 'deg');
+            card.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+            card.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+          });
+          card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--rx', '0deg');
+            card.style.setProperty('--ry', '0deg');
+          });
+        }
+      });
+
+      // ---------- shuffle (FLIP animation) ----------
+      document.getElementById('shuffleBtn').addEventListener('click', () => {
+        const items = [...grid.children];
+        const first = new Map(items.map((el) => [el, el.getBoundingClientRect()]));
+        const shuffled = items.slice();
+        for (let k = shuffled.length - 1; k > 0; k--) {
+          const j = Math.floor(Math.random() * (k + 1));
+          [shuffled[k], shuffled[j]] = [shuffled[j], shuffled[k]];
+        }
+        shuffled.forEach((el) => grid.appendChild(el));
+        if (FX.reduce) return;
+        shuffled.forEach((el) => {
+          const a = first.get(el);
+          const b = el.getBoundingClientRect();
+          const dx = a.left - b.left;
+          const dy = a.top - b.top;
+          el.style.transition = 'none';
+          el.style.translate = `${dx}px ${dy}px`;
+        });
+        grid.offsetWidth; // reflow
+        shuffled.forEach((el, k) => {
+          el.style.transition = `translate .7s cubic-bezier(.34,1.3,.64,1) ${k * 0.03}s, transform .45s ease`;
+          el.style.translate = '0px 0px';
+          setTimeout(() => { el.style.transition = ''; el.style.translate = ''; }, 900 + k * 30);
+        });
+      });
+
+      // ---------- lightbox ----------
+      const lb = document.getElementById('lightbox');
+      const lbCard = document.getElementById('lbCard');
+      const lbImg = document.getElementById('lbImg');
+      const lbCaption = document.getElementById('lbCaption');
+      const lbCounter = document.getElementById('lbCounter');
+      const lbLike = document.getElementById('lbLike');
+      const lbPlay = document.getElementById('lbPlay');
+      const lbProgress = document.getElementById('lbProgress');
+      const lbThumbs = document.getElementById('lbThumbs');
+      const lbStage = document.getElementById('lbStage');
+      const SLIDE_MS = 3500;
+      lb.style.setProperty('--slide', SLIDE_MS / 1000 + 's');
+
+      let current = 0;
+      let playing = false;
+      let playTimer = null;
+      let lastFocus = null;
+
+      const thumbs = photos.map((p, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Show ' + p.alt);
+        b.innerHTML = `<img src="${p.src}" alt="" loading="lazy">`;
+        b.addEventListener('click', () => show(i, i > current ? 'next' : 'prev'));
+        lbThumbs.appendChild(b);
+        return b;
+      });
+
+      function syncLightboxLike() {
+        const on = loves.has(current);
+        lbLike.textContent = on ? '♥' : '♡';
+        lbLike.classList.toggle('is-liked', on);
+        lbLike.setAttribute('aria-pressed', on);
+      }
+
+      function restartProgress() {
+        lbProgress.style.animation = 'none';
+        void lbProgress.offsetWidth;
+        lbProgress.style.animation = '';
+        // retrigger ken burns
+        lbImg.style.animation = 'none';
+        void lbImg.offsetWidth;
+        lbImg.style.animation = '';
+      }
+
+      function show(i, dir) {
+        current = (i + photos.length) % photos.length;
+        const p = photos[current];
+        lbImg.src = p.src;
+        lbImg.alt = p.alt;
+        lbCaption.textContent = p.caption;
+        lbCounter.textContent = `${current + 1} / ${photos.length}`;
+        thumbs.forEach((t, k) => t.classList.toggle('active', k === current));
+        thumbs[current].scrollIntoView({ block: 'nearest', inline: 'center', behavior: FX.reduce ? 'auto' : 'smooth' });
+        syncLightboxLike();
+        if (dir) {
+          lbCard.classList.remove('slide-next', 'slide-prev');
+          void lbCard.offsetWidth;
+          lbCard.classList.add(dir === 'next' ? 'slide-next' : 'slide-prev');
+        }
+        if (playing) { restartProgress(); schedule(); }
+      }
+
+      function schedule() {
+        clearTimeout(playTimer);
+        playTimer = setTimeout(() => show(current + 1, 'next'), SLIDE_MS);
+      }
+
+      function setPlaying(on) {
+        playing = on;
+        lb.classList.toggle('playing', on);
+        lbPlay.textContent = on ? '❚❚' : '▶';
+        lbPlay.setAttribute('aria-label', on ? 'Pause slideshow' : 'Play slideshow');
+        clearTimeout(playTimer);
+        if (on) { restartProgress(); schedule(); }
+      }
+
+      function openLightbox(i, autoplay) {
+        lastFocus = document.activeElement;
+        lb.classList.add('open');
+        lb.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        show(i);
+        setPlaying(!!autoplay);
+        setTimeout(() => lb.querySelector('.lb-close').focus(), 50);
+      }
+
+      function closeLightbox() {
+        setPlaying(false);
+        lb.classList.remove('open');
+        lb.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+
+      lb.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', closeLightbox));
+      lb.querySelector('.lb-prev').addEventListener('click', () => show(current - 1, 'prev'));
+      lb.querySelector('.lb-next').addEventListener('click', () => show(current + 1, 'next'));
+      lbPlay.addEventListener('click', () => setPlaying(!playing));
+      lbLike.addEventListener('click', () => {
+        toggleLove(current);
+        if (loves.has(current)) {
+          const r = lbCard.getBoundingClientRect();
+          FX.burst(r.left + r.width / 2, r.top + r.height / 2, 16, ['💖', '💗', '💕', '✨'], 2);
+        }
+      });
+      lbImg.addEventListener('dblclick', () => lbLike.click());
+      document.getElementById('slideshowBtn').addEventListener('click', () => openLightbox(0, true));
+
+      document.addEventListener('keydown', (e) => {
+        if (!lb.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        else if (e.key === 'ArrowRight') show(current + 1, 'next');
+        else if (e.key === 'ArrowLeft') show(current - 1, 'prev');
+        else if (e.key === ' ' && e.target === document.body) { e.preventDefault(); setPlaying(!playing); }
+        else if (e.key.toLowerCase() === 'l') lbLike.click();
+        else if (e.key === 'Tab') {
+          // keep focus inside the dialog
+          const f = [...lb.querySelectorAll('button')].filter((b) => b.offsetParent !== null);
+          if (!f.length) return;
+          const first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      });
+
+      // swipe
+      let sx = null, sy = null;
+      lbStage.addEventListener('pointerdown', (e) => { sx = e.clientX; sy = e.clientY; });
+      lbStage.addEventListener('pointerup', (e) => {
+        if (sx === null) return;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        sx = sy = null;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1), dx < 0 ? 'next' : 'prev');
+      });
+
+      renderLoves(-1);
+      loveCount.classList.remove('bump');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The End 💖</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="fx.css">
+  <script src="script.js" defer></script>
+  <script src="fx.js" defer></script>
+</head>
+<body class="end-page" data-fx-hearts="30">
+  <button id="music-toggle">🔈</button>
+
+  <div class="content end-content">
+    <button class="end-heart" id="endHeart" aria-label="Tap the heart">💖</button>
+    <h1 data-wave>You've reached the end! 💕</h1>
+    <p class="end-text">I love you, ALWAYS. ❤️</p>
+    <p class="end-hint">(tap the heart 💞)</p>
+    <button class="pretty-button" onclick="goTo('index.html')">Relive our journey ↺</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const FX = window.FX;
+      if (!FX) return;
+      const heart = document.getElementById('endHeart');
+      const glyphs = ['💖', '💗', '💕', '✨', '🌸', '❤️'];
+
+      // a few celebratory bursts when the page opens
+      let shots = 0;
+      const fire = () => {
+        const x = window.innerWidth * (0.15 + Math.random() * 0.7);
+        const y = window.innerHeight * (0.15 + Math.random() * 0.45);
+        FX.burst(x, y, 14, glyphs, 1.6);
+        if (++shots < 6) setTimeout(fire, 450 + Math.random() * 350);
+      };
+      setTimeout(fire, 700);
+
+      heart.addEventListener('click', () => {
+        const r = heart.getBoundingClientRect();
+        FX.burst(r.left + r.width / 2, r.top + r.height / 2, 22, glyphs, 2.2);
+        heart.classList.remove('boom');
+        void heart.offsetWidth;
+        heart.classList.add('boom');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+/* =====================================================
+   FX — shared animation styles (used with fx.js)
+===================================================== */
+
+/* Soft page entrance */
+body { animation: fx-page-in .8s ease-out; }
+@keyframes fx-page-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- floating hearts layer ---------- */
+.fx-float {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.fx-float span {
+  position: absolute;
+  left: var(--x);
+  bottom: -60px;
+  font-size: var(--size);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: fx-rise var(--dur) linear var(--delay) infinite;
+  filter: drop-shadow(0 2px 6px rgba(255, 120, 160, .25));
+}
+@keyframes fx-rise {
+  0%   { transform: translate(0, 0) rotate(0deg);                 opacity: 0; }
+  10%  { opacity: var(--op); }
+  50%  { transform: translate(var(--sway), -55vh) rotate(18deg); }
+  90%  { opacity: var(--op); }
+  100% { transform: translate(0, -118vh) rotate(-12deg);          opacity: 0; }
+}
+
+/* ---------- cursor trail ---------- */
+.fx-trail {
+  position: fixed;
+  z-index: 9998;
+  pointer-events: none;
+  color: var(--c, #ff6f9f);
+  font-size: 14px;
+  line-height: 1;
+  translate: -50% -50%;
+  text-shadow: 0 0 8px currentColor;
+  animation: fx-trail .9s ease-out forwards;
+}
+@keyframes fx-trail {
+  from { opacity: 1; transform: translate(0, 0) scale(var(--s, 1)); }
+  to   { opacity: 0; transform: translate(var(--dx, 0), 26px) scale(0); }
+}
+
+/* ---------- click burst ---------- */
+.fx-burst {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  font-size: 18px;
+  line-height: 1;
+  translate: -50% -50%;
+  animation: fx-burst .9s cubic-bezier(.15, .8, .3, 1) forwards;
+}
+@keyframes fx-burst {
+  0%   { opacity: 1; transform: translate(0, 0) scale(.3) rotate(0deg); }
+  60%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(var(--s)) rotate(var(--r)); }
+}
+
+/* ---------- page transition curtain ---------- */
+.fx-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: radial-gradient(circle at center, #ffe3ec 0%, #ffb6c8 55%, #f0849f 100%);
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path .65s cubic-bezier(.7, 0, .3, 1);
+}
+.fx-curtain span {
+  font-size: 64px;
+  opacity: 0;
+  transform: scale(.4);
+  transition: opacity .3s ease .25s, transform .5s cubic-bezier(.34, 1.56, .64, 1) .2s;
+}
+.fx-curtain.is-active {
+  pointer-events: all;
+  clip-path: circle(150% at 50% 50%);
+}
+.fx-curtain.is-active span {
+  opacity: 1;
+  transform: scale(1);
+  animation: fx-beat .8s ease-in-out .6s infinite;
+}
+
+/* ---------- music button ---------- */
+#music-toggle {
+  transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease;
+  z-index: 50;
+}
+#music-toggle:hover { transform: scale(1.1) rotate(-6deg); }
+#music-toggle.is-playing {
+  animation: fx-music 1.6s ease-in-out infinite;
+}
+@keyframes fx-music {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 111, 159, .45); }
+  50%      { box-shadow: 0 0 0 12px rgba(255, 111, 159, 0); }
+}
+
+/* ---------- wavy title ---------- */
+.fx-word { display: inline-block; white-space: nowrap; }
+.fx-char {
+  display: inline-block;
+  animation:
+    fx-char-in .7s cubic-bezier(.34, 1.56, .64, 1) calc(var(--i) * 45ms) backwards,
+    fx-wave 3.2s ease-in-out calc(1s + var(--i) * 90ms) infinite;
+}
+@keyframes fx-char-in {
+  from { opacity: 0; transform: translateY(28px) rotate(-12deg) scale(.6); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fx-wave {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-7px); }
+}
+
+/* ---------- generic reveal ---------- */
+[data-reveal] {
+  opacity: 0;
+  translate: 0 30px;
+  transition: opacity .8s ease, translate .9s cubic-bezier(.2, .8, .2, 1);
+}
+[data-reveal].is-visible { opacity: 1; translate: 0 0; }
+
+@keyframes fx-beat {
+  0%, 100% { transform: scale(1); }
+  15%      { transform: scale(1.18); }
+  30%      { transform: scale(.96); }
+  45%      { transform: scale(1.1); }
+}
+
+/* ---------- accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+  body { animation: none; }
+  .fx-float, .fx-trail, .fx-burst { display: none !important; }
+  .fx-char { animation: none !important; }
+  [data-reveal] { opacity: 1; translate: none; transition: none; }
+}
